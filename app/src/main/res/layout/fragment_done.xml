@@ -9,11 +9,11 @@
     tools:context="me.tossapon.todo.MainActivity$PlaceholderFragment">
 
     <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/fpending_srlayout"
+        android:id="@+id/fdone_srlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/fpending_recyclerview"
+            android:id="@+id/fdone_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

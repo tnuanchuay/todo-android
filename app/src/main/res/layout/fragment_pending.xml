@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="me.tossapon.todo.MainActivity$PlaceholderFragment">
+    tools:context="me.tossapon.todo.activity.MainActivity$PlaceholderFragment">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/fpending_srlayout"

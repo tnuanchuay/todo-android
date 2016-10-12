@@ -1,4 +1,4 @@
-package me.tossapon.todo;
+package me.tossapon.todo.activity;
 
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.TextView;
+
+import me.tossapon.todo.R;
 
 public class MainActivity extends AppCompatActivity {
 

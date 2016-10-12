@@ -9,6 +9,6 @@ import retrofit2.http.GET;
  */
 
 public interface TaskAPI {
-    @GET("")
+    @GET("u/6890301/tasks.json")
     Call<Task> getAllTask ();
 }

@@ -12,8 +12,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
+
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,6 +24,8 @@ import me.tossapon.todo.activity.main.fragment.DoneFragment;
 import me.tossapon.todo.activity.main.fragment.PendingFragment;
 import me.tossapon.todo.api.TaskAPI;
 import me.tossapon.todo.api.response.TaskResponse;
+import me.tossapon.todo.singletron.TaskData;
+import me.tossapon.todo.model.Task;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -44,19 +47,31 @@ public class MainActivity extends AppCompatActivity {
     @Inject
     Retrofit retrofit;
 
+    ArrayList<Task> doneTask;
+    ArrayList<Task> pendingTask;
+
+    PendingFragment pendingFragment;
+    DoneFragment doneFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         ButterKnife.bind(this);
         ((TodoApp)getApplication()).getNetworkComponent().inject(this);
+        doneTask = TaskData.getInstance().getDoneTask();
+        pendingTask = TaskData.getInstance().getPendingTask();
 
         setSupportActionBar(toolbar);
 
+        pendingFragment = PendingFragment.NewInstance();
+        doneFragment = DoneFragment.NewInstance();
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter
-                .AddFragment(PendingFragment.NewInstance(), "Pending")
-                .AddFragment(DoneFragment.NewInstance(), "Done");
+                .AddFragment(pendingFragment, "Pending")
+                .AddFragment(doneFragment, "Done");
 
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
@@ -66,8 +81,7 @@ public class MainActivity extends AppCompatActivity {
         fabAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
             }
         });
 
@@ -76,12 +90,20 @@ public class MainActivity extends AppCompatActivity {
         response.enqueue(new Callback<TaskResponse>() {
             @Override
             public void onResponse(Call<TaskResponse> call, Response<TaskResponse> response) {
-                Log.d("LOG", "onResponse: " + response.body().getData().size());
+                ArrayList<Task> tasks = response.body().getData();
+                for(int i = 0 ; i < tasks.size(); i++) {
+                    if (tasks.get(i).getState() == 0)
+                        pendingTask.add(tasks.get(i));
+                    else
+                        doneTask.add(tasks.get(i));
+                }
+
+                pendingFragment.NotifyDataChange();
             }
 
             @Override
             public void onFailure(Call<TaskResponse> call, Throwable t) {
-
+                Snackbar.make(mainLayout, "Cannot retrieve data " + t.getMessage(), Snackbar.LENGTH_LONG).show();
             }
         });
     }

@@ -21,7 +21,7 @@ public class DoneFragment extends Fragment {
         return v;
     }
 
-    public static Fragment NewInstance(){
+    public static DoneFragment NewInstance(){
         return new DoneFragment();
     }
 }

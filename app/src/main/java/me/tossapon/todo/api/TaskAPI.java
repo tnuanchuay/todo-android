@@ -1,5 +1,6 @@
 package me.tossapon.todo.api;
 
+import me.tossapon.todo.api.response.TaskResponse;
 import me.tossapon.todo.model.Task;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -10,5 +11,5 @@ import retrofit2.http.GET;
 
 public interface TaskAPI {
     @GET("u/6890301/tasks.json")
-    Call<Task> getAllTask ();
+    Call<TaskResponse> getAllTask ();
 }

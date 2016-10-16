@@ -1,7 +1,10 @@
 package me.tossapon.todo.adapter;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,8 +21,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import me.tossapon.todo.R;
 import me.tossapon.todo.model.Task;
-import me.tossapon.todo.singletron.AdapterSingletron;
-import me.tossapon.todo.singletron.TaskData;
+import me.tossapon.todo.singletron.AdapterInstance;
+import me.tossapon.todo.singletron.FabInstance;
+import me.tossapon.todo.singletron.TaskInstace;
 
 /**
  * Created by benvo_000 on 14/10/2559.
@@ -33,8 +37,8 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
     int[] imageId = {R.drawable.item1, R.drawable.item2, R.drawable.item3, R.drawable.item4};
 
     public PendingAdapter() {
-        this.doneTasks = TaskData.getInstance().getDoneTask();
-        this.pendingTasks = TaskData.getInstance().getPendingTask();
+        this.doneTasks = TaskInstace.getInstance().getDoneTask();
+        this.pendingTasks = TaskInstace.getInstance().getPendingTask();
     }
 
     @Override
@@ -59,26 +63,13 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
                 final Runnable r = new Runnable() {
                     @Override
                     public void run() {
-//                        holder.root.animate()
-//                                .translationX(1000f)
-//                                .setDuration(300)
-//                                .alpha(0f)
-//                                .setInterpolator(new DecelerateInterpolator(3.f))
-//                                .withEndAction(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//
-//                                    }
-//                                })
-//                                .start();
-
                         Task t = pendingTasks.get(holder.getAdapterPosition());
                         pendingTasks.remove(t);
                         t.setState(0);
                         doneTasks.add(t);
                         notifyItemRemoved(holder.getAdapterPosition());
                         notifyItemRangeChanged(holder.getAdapterPosition(), pendingTasks.size());
-                        AdapterSingletron.getInstance().getDoneAdapter().notifyDataSetChanged();
+                        AdapterInstance.getInstance().getDoneAdapter().notifyDataSetChanged();
 
                         Log.d(TAG, "onAnimationEnd: " + pendingTasks.size());
                         Log.d(TAG, "onAnimationEnd: " + doneTasks.size());
@@ -95,6 +86,42 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
                 });
             }
         });
+        holder.root.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                final FloatingActionButton fab = FabInstance.getInstance().getFab();
+                fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F44336")));
+                fab.setImageResource(R.drawable.ic_delete_white_48dp);
+
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int position = holder.getAdapterPosition();
+                        Task task = pendingTasks.get(position);
+                        pendingTasks.remove(task);
+                        PendingAdapter.this.notifyItemRemoved(position);
+                        PendingAdapter.this.notifyItemRangeChanged(position, doneTasks.size());
+                        backToBasicFab(fab);
+                    }
+                });
+
+                Handler h = new Handler();
+                h.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        backToBasicFab(fab);
+                    }
+                }, 5000);
+
+                return true;
+            }
+        });
+    }
+
+    private void backToBasicFab(final FloatingActionButton fab) {
+        fab.setImageResource(R.drawable.ic_add_white_48dp);
+        fab.setOnClickListener(FabInstance.getInstance().getFabDefaultRunnable());
+        fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF4081")));
     }
 
     @Override

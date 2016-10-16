@@ -1,16 +1,20 @@
 package me.tossapon.todo.activity.main;
 
+import android.content.DialogInterface;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 
@@ -26,8 +30,9 @@ import me.tossapon.todo.adapter.DoneAdapter;
 import me.tossapon.todo.adapter.PendingAdapter;
 import me.tossapon.todo.api.TaskAPI;
 import me.tossapon.todo.api.response.TaskResponse;
-import me.tossapon.todo.singletron.AdapterSingletron;
-import me.tossapon.todo.singletron.TaskData;
+import me.tossapon.todo.singletron.AdapterInstance;
+import me.tossapon.todo.singletron.FabInstance;
+import me.tossapon.todo.singletron.TaskInstace;
 import me.tossapon.todo.model.Task;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -65,15 +70,16 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
         ((TodoApp)getApplication()).getNetworkComponent().inject(this);
-        doneTask = TaskData.getInstance().getDoneTask();
-        pendingTask = TaskData.getInstance().getPendingTask();
+        doneTask = TaskInstace.getInstance().getDoneTask();
+        pendingTask = TaskInstace.getInstance().getPendingTask();
+        FabInstance.getInstance().setFab(fabAdd);
 
         setSupportActionBar(toolbar);
 
         pendingFragment = PendingFragment.NewInstance();
         doneFragment = DoneFragment.NewInstance();
-        AdapterSingletron.getInstance().setDoneAdapter(new DoneAdapter());
-        AdapterSingletron.getInstance().setPendingAdapter(new PendingAdapter());
+        AdapterInstance.getInstance().setDoneAdapter(new DoneAdapter());
+        AdapterInstance.getInstance().setPendingAdapter(new PendingAdapter());
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter
@@ -105,12 +111,36 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        fabAdd.setOnClickListener(new View.OnClickListener() {
+        FabInstance.getInstance().setFabDefaultRunnable(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                final EditText taskName;
+                View v = LayoutInflater.from(getApplicationContext()).inflate(R.layout.dialog_new_task, null);
+                taskName = (EditText) v.findViewById(R.id.task_name);
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+                        .setView(v)
+                        .setTitle("todo")
+                        .setMessage("Add new Tasks")
+                        .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                int lastId = TaskInstace.getInstance().getLastId()+1;
+                                pendingTask.add(new Task(lastId, taskName.getText().toString(), 0));
+                                AdapterInstance.getInstance().getPendingAdapter().notifyDataSetChanged();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                alertDialog.show();
             }
         });
+
+        fabAdd.setOnClickListener(FabInstance.getInstance().getFabDefaultRunnable());
 
         getTasksData();
     }
@@ -125,14 +155,19 @@ public class MainActivity extends AppCompatActivity {
                 pendingTask.clear();
                 doneTask.clear();
                 for(int i = 0 ; i < tasks.size(); i++) {
-                    if (tasks.get(i).getState() == 0)
+                    int lastId = TaskInstace.getInstance().getLastId();
+                    Task task = tasks.get(i);
+                    if (task.getState() == 0)
                         pendingTask.add(tasks.get(i));
                     else
                         doneTask.add(tasks.get(i));
+
+                    if(lastId < task.getId())
+                        TaskInstace.getInstance().setLastId(task.getId());
                 }
 
-                AdapterSingletron.getInstance().getDoneAdapter().notifyDataSetChanged();
-                AdapterSingletron.getInstance().getPendingAdapter().notifyDataSetChanged();
+                AdapterInstance.getInstance().getDoneAdapter().notifyDataSetChanged();
+                AdapterInstance.getInstance().getPendingAdapter().notifyDataSetChanged();
                 Log.d(TAG, "onResponse: " + doneTask.size());
             }
 

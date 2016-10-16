@@ -7,15 +7,16 @@ import me.tossapon.todo.model.Task;
 /**
  * Created by benvo_000 on 14/10/2559.
  */
-public class TaskData {
-    private static TaskData ourInstance = new TaskData();
+public class TaskInstace {
+    private static TaskInstace ourInstance = new TaskInstace();
     private ArrayList<Task> doneTask;
     private ArrayList<Task> pendingTask;
-    public static TaskData getInstance() {
+    private int lastId;
+    public static TaskInstace getInstance() {
         return ourInstance;
     }
 
-    private TaskData() {
+    private TaskInstace() {
         doneTask = new ArrayList<>();
         pendingTask = new ArrayList<>();
     }
@@ -26,5 +27,13 @@ public class TaskData {
 
     public ArrayList<Task> getPendingTask() {
         return pendingTask;
+    }
+
+    public int getLastId() {
+        return lastId;
+    }
+
+    public void setLastId(int lastId) {
+        this.lastId = lastId;
     }
 }

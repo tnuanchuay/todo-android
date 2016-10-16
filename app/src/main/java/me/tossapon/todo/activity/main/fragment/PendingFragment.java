@@ -6,10 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,8 +24,8 @@ import me.tossapon.todo.TodoApp;
 import me.tossapon.todo.adapter.PendingAdapter;
 import me.tossapon.todo.api.TaskAPI;
 import me.tossapon.todo.api.response.TaskResponse;
-import me.tossapon.todo.singletron.AdapterSingletron;
-import me.tossapon.todo.singletron.TaskData;
+import me.tossapon.todo.singletron.AdapterInstance;
+import me.tossapon.todo.singletron.TaskInstace;
 import me.tossapon.todo.model.Task;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -64,14 +62,14 @@ public class PendingFragment extends Fragment{
         View v = inflater.inflate(R.layout.fragment_pending, container, false);
 
         ButterKnife.bind(this, v);
-        pendingTask = TaskData.getInstance().getPendingTask();
-        doneTask = TaskData.getInstance().getDoneTask();
+        pendingTask = TaskInstace.getInstance().getPendingTask();
+        doneTask = TaskInstace.getInstance().getDoneTask();
         ((TodoApp)getActivity().getApplication()).getNetworkComponent().inject(this);
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
         mRecyclerView.setHasFixedSize(false);
 //        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        adapter = AdapterSingletron.getInstance().getPendingAdapter();
+        adapter = AdapterInstance.getInstance().getPendingAdapter();
         mRecyclerView.setAdapter(adapter);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -98,13 +96,18 @@ public class PendingFragment extends Fragment{
                 pendingTask.clear();
                 doneTask.clear();
                 for(int i = 0 ; i < tasks.size(); i++) {
-                    if (tasks.get(i).getState() == 0)
+                    int lastId = TaskInstace.getInstance().getLastId();
+                    Task task = tasks.get(i);
+                    if (task.getState() == 0)
                         pendingTask.add(tasks.get(i));
                     else
                         doneTask.add(tasks.get(i));
+
+                    if(lastId < task.getId())
+                        TaskInstace.getInstance().setLastId(task.getId());
                 }
-                AdapterSingletron.getInstance().getDoneAdapter().notifyDataSetChanged();
-                AdapterSingletron.getInstance().getPendingAdapter().notifyDataSetChanged();
+                AdapterInstance.getInstance().getDoneAdapter().notifyDataSetChanged();
+                AdapterInstance.getInstance().getPendingAdapter().notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
             }
 

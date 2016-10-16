@@ -6,6 +6,8 @@ import javax.inject.Singleton;
 
 import dagger.Component;
 import me.tossapon.todo.activity.main.MainActivity;
+import me.tossapon.todo.activity.main.fragment.DoneFragment;
+import me.tossapon.todo.activity.main.fragment.PendingFragment;
 import me.tossapon.todo.modules.NetworkModule;
 
 /**
@@ -15,5 +17,7 @@ import me.tossapon.todo.modules.NetworkModule;
 @Component(modules = NetworkModule.class)
 public interface NetworkComponent {
     void inject(MainActivity activity);
+    void inject(PendingFragment pendingFragment);
+    void inject(DoneFragment doneFragment);
 }
 

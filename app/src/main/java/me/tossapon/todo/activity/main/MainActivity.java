@@ -22,8 +22,11 @@ import me.tossapon.todo.R;
 import me.tossapon.todo.TodoApp;
 import me.tossapon.todo.activity.main.fragment.DoneFragment;
 import me.tossapon.todo.activity.main.fragment.PendingFragment;
+import me.tossapon.todo.adapter.DoneAdapter;
+import me.tossapon.todo.adapter.PendingAdapter;
 import me.tossapon.todo.api.TaskAPI;
 import me.tossapon.todo.api.response.TaskResponse;
+import me.tossapon.todo.singletron.AdapterSingletron;
 import me.tossapon.todo.singletron.TaskData;
 import me.tossapon.todo.model.Task;
 import retrofit2.Call;
@@ -34,6 +37,8 @@ import retrofit2.Retrofit;
 public class MainActivity extends AppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
+
+    public static final String TAG="MAIN";
 
     @BindView(R.id.container)
     ViewPager mViewPager;
@@ -67,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
         pendingFragment = PendingFragment.NewInstance();
         doneFragment = DoneFragment.NewInstance();
+        AdapterSingletron.getInstance().setDoneAdapter(new DoneAdapter());
+        AdapterSingletron.getInstance().setPendingAdapter(new PendingAdapter());
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter
@@ -74,6 +81,26 @@ public class MainActivity extends AppCompatActivity {
                 .AddFragment(doneFragment, "Done");
 
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position == 0)
+                    fabAdd.show();
+                else
+                    fabAdd.hide();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -85,12 +112,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        getTasksData();
+    }
+
+    private void getTasksData() {
         TaskAPI api = retrofit.create(TaskAPI.class);
         Call<TaskResponse> response = api.getAllTask();
         response.enqueue(new Callback<TaskResponse>() {
             @Override
             public void onResponse(Call<TaskResponse> call, Response<TaskResponse> response) {
                 ArrayList<Task> tasks = response.body().getData();
+                pendingTask.clear();
+                doneTask.clear();
                 for(int i = 0 ; i < tasks.size(); i++) {
                     if (tasks.get(i).getState() == 0)
                         pendingTask.add(tasks.get(i));
@@ -98,7 +131,9 @@ public class MainActivity extends AppCompatActivity {
                         doneTask.add(tasks.get(i));
                 }
 
-                pendingFragment.NotifyDataChange();
+                AdapterSingletron.getInstance().getDoneAdapter().notifyDataSetChanged();
+                AdapterSingletron.getInstance().getPendingAdapter().notifyDataSetChanged();
+                Log.d(TAG, "onResponse: " + doneTask.size());
             }
 
             @Override

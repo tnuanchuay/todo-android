@@ -25,31 +25,31 @@ import me.tossapon.todo.singletron.TaskData;
  * Created by benvo_000 on 14/10/2559.
  */
 
-public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingViewHolder>{
-    private static final String TAG = "PENDING_ADP";
-    ArrayList<Task> pendingTasks;
+public class DoneAdapter  extends RecyclerView.Adapter<DoneAdapter.DoneViewHolder>{
+    private static final String TAG = "DONE_ADP";
     ArrayList<Task> doneTasks;
+    ArrayList<Task> pendingTasks;
     Context context;
     int[] imageId = {R.drawable.item1, R.drawable.item2, R.drawable.item3, R.drawable.item4};
 
-    public PendingAdapter() {
+    public DoneAdapter() {
         this.doneTasks = TaskData.getInstance().getDoneTask();
         this.pendingTasks = TaskData.getInstance().getPendingTask();
     }
 
     @Override
-    public PendingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public DoneViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         View v = LayoutInflater.from(context).inflate(R.layout.cardview_todoitem, parent, false);
-        PendingViewHolder vh = new PendingViewHolder(v);
+        DoneViewHolder vh = new DoneViewHolder(v);
         return vh;
     }
 
     @Override
-    public void onBindViewHolder(final PendingViewHolder holder, final int position) {
+    public void onBindViewHolder(final DoneViewHolder holder, final int position) {
         Random rand = new Random();
         holder.cancel.setAlpha(0.0f);
-        holder.itemname.setText(pendingTasks.get(position).getName());
+        holder.itemname.setText(doneTasks.get(position).getName());
         Picasso.with(context).load(imageId[rand.nextInt(4)]).into(holder.bg);
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +60,7 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
                     @Override
                     public void run() {
 //                        holder.root.animate()
-//                                .translationX(1000f)
+//                                .translationX(-1000f)
 //                                .setDuration(300)
 //                                .alpha(0f)
 //                                .setInterpolator(new DecelerateInterpolator(3.f))
@@ -68,17 +68,18 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
 //                                    @Override
 //                                    public void run() {
 //
+//                                        holder.root.clearAnimation();
 //                                    }
 //                                })
 //                                .start();
 
-                        Task t = pendingTasks.get(holder.getAdapterPosition());
-                        pendingTasks.remove(t);
+                        Task t = doneTasks.get(holder.getAdapterPosition());
+                        doneTasks.remove(t);
                         t.setState(0);
-                        doneTasks.add(t);
+                        pendingTasks.add(t);
                         notifyItemRemoved(holder.getAdapterPosition());
-                        notifyItemRangeChanged(holder.getAdapterPosition(), pendingTasks.size());
-                        AdapterSingletron.getInstance().getDoneAdapter().notifyDataSetChanged();
+                        notifyItemRangeChanged(holder.getAdapterPosition(), doneTasks.size());
+                        AdapterSingletron.getInstance().getPendingAdapter().notifyDataSetChanged();
 
                         Log.d(TAG, "onAnimationEnd: " + pendingTasks.size());
                         Log.d(TAG, "onAnimationEnd: " + doneTasks.size());
@@ -99,10 +100,10 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
 
     @Override
     public int getItemCount() {
-        return pendingTasks.size();
+        return doneTasks.size();
     }
 
-    public class PendingViewHolder extends RecyclerView.ViewHolder{
+    public class DoneViewHolder extends RecyclerView.ViewHolder{
 
         @BindView(R.id.root)
         RelativeLayout root;
@@ -112,7 +113,7 @@ public class PendingAdapter extends RecyclerView.Adapter<PendingAdapter.PendingV
         ImageView bg;
         @BindView(R.id.item_txtname)
         TextView itemname;
-        public PendingViewHolder(View itemView) {
+        public DoneViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }

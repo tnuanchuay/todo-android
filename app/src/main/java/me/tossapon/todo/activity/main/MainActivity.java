@@ -1,5 +1,6 @@
 package me.tossapon.todo.activity.main;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
@@ -146,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getTasksData() {
+        final ProgressDialog progressDialog = ProgressDialog.show(this, "", "Loading Task data", true);
         TaskAPI api = retrofit.create(TaskAPI.class);
         Call<TaskResponse> response = api.getAllTask();
         response.enqueue(new Callback<TaskResponse>() {
@@ -169,11 +171,13 @@ public class MainActivity extends AppCompatActivity {
                 AdapterInstance.getInstance().getDoneAdapter().notifyDataSetChanged();
                 AdapterInstance.getInstance().getPendingAdapter().notifyDataSetChanged();
                 Log.d(TAG, "onResponse: " + doneTask.size());
+                progressDialog.dismiss();
             }
 
             @Override
             public void onFailure(Call<TaskResponse> call, Throwable t) {
                 Snackbar.make(mainLayout, "Cannot retrieve data " + t.getMessage(), Snackbar.LENGTH_LONG).show();
+                progressDialog.dismiss();
             }
         });
     }
